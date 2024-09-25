@@ -1,0 +1,7 @@
+logger:
+#  file: ../logs/strategyServer.log
+  level: debug
+
+server:
+  ip: 172.22.1.254
+  port: 7070
