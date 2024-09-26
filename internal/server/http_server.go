@@ -8,35 +8,40 @@ import (
 )
 
 type HttpServer struct {
+	BaseServer
 	server *http.Server
-	ip     string
-	port   int
 }
 
-func (s *HttpServer) Init(d *InitData) (err error) {
-	s.ip = d.LocalIp
-	s.port = d.LocalPort
-
-	return
-}
+//func (s *HttpServer) Init() error {
+//	fmt.Printf("httpServer...")
+//	return nil
+//}
 
 func (s *HttpServer) Start() (err error) {
-	if s.ip == "" || s.port <= 0 {
-		e := fmt.Sprintf("ip:port is invaild.%v:%v", s.ip, s.port)
+	if s.localPort <= 0 {
+		e := fmt.Sprintf("port is invaild.%v", s.localPort)
 		return errors.New(e)
 	}
-	url := s.ip + ":" + strconv.FormatInt(int64(s.port), 10)
+
+	url := s.localIp + ":" + strconv.FormatInt(int64(s.localPort), 10)
 
 	s.server = &http.Server{
 		Addr:    url,
-		Handler: nil,
+		Handler: &HttpServer{},
 	}
 
-	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		s.rcvHandler(writer, request)
-	})
+	//pattern := "/"
+	//if s.pattern != "" {
+	//	pattern = s.pattern
+	//}
 
-	logger.Infof("Start http server listen")
+	//parse params if necessary
+
+	//http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
+	//	s.rcvHandler(writer, request)
+	//})
+
+	logger.Infof("Start http server listen with url=%v%v", url, s.pattern)
 
 	err = s.server.ListenAndServe() //block
 
@@ -44,8 +49,14 @@ func (s *HttpServer) Start() (err error) {
 
 }
 
+func (s *HttpServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	fmt.Printf("ServeHTTP------httpServer%V", request.URL.String())
+
+}
+
 func (s *HttpServer) Stop() (err error) {
 	if s.server != nil {
+		logger.Infof(":Close http server connection")
 		s.server.Close()
 	}
 
@@ -53,10 +64,7 @@ func (s *HttpServer) Stop() (err error) {
 
 }
 
-func (s HttpServer) RegisterHandler(name string, handler func()) {
-
-}
-
 func (s *HttpServer) rcvHandler(writer http.ResponseWriter, request *http.Request) {
-	logger.Info(request.Body)
+	fmt.Printf("httpServer")
+	//logger.Info(request.Body)
 }

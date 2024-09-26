@@ -37,39 +37,41 @@ func (a *App) listenSignal() {
 	a.sig = &Signal{}
 
 	s1 := func() {
-		logger.Infof("s1")
-	}
-	s2 := func() {
-		logger.Infof("s2")
+		a.stop()
 	}
 
-	a.sig.RegisterOnExit(s1, s2)
+	a.sig.RegisterOnExit(s1)
 	a.sig.ListenSignal()
 	//s.NonBlockListenSignal()
 
 }
 
+// start service
 func (a *App) start() {
 	a.startService()
+	a.listenSignal()
 }
 
 // start network service
 func (a *App) startService() {
-	s := &server.HttpServer{}
+	//s := &server.HttpServer{}
+	s := &server.WebsocketServer{}
 	a.server = s
-	d := &server.InitData{
-		LocalIp:   "127.0.0.1",
-		LocalPort: 7777,
-	}
-	if s.Init(d) != nil {
+	if s.Init() != nil {
+		logger.Errorf("initialize websocket failed")
 		return
 	}
+
+	c := singleton.GetInstance[config.AppConfig]().(*config.AppConfig).Server
+	s.SetLocalIp(c.Ip).SetLocalPort(c.Port).SetPattern("/")
+
 	go s.Start()
 
 }
 
 func (a *App) stop() {
 	if a.server != nil {
+		logger.Infof("try to stop app...")
 		a.server.Stop()
 	}
 }
@@ -79,8 +81,7 @@ func Start() {
 	a := &App{}
 	a.initConfig()
 	a.start()
-	a.listenSignal()
-
-	a.stop()
+	//a.listenSignal()
+	//a.stop()
 
 }

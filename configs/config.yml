@@ -3,5 +3,6 @@ logger:
   level: debug
 
 server:
-  ip: 172.22.1.254
+  ip:
   port: 7070
+  
